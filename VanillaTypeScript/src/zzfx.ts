@@ -65,14 +65,12 @@ export const zzfxX = new AudioContext();
 /**
  * Play a sound from zzfx paramerters.
  */
-export function zzfx(...parameters: (number | undefined)[]): AudioBufferSourceNode {
-  return zzfxP(zzfxG(...parameters));
-}
+export const zzfx = (...parameters: (number | undefined)[]): AudioBufferSourceNode => zzfxP(zzfxG(...parameters));
 
 /**
  * Play an array of samples.
  */
-export function zzfxP(...samples: number[][]): AudioBufferSourceNode {
+export const zzfxP = (...samples: number[][]): AudioBufferSourceNode => {
   const buffer = zzfxX.createBuffer(samples.length, samples[0].length, zzfxR),
     source = zzfxX.createBufferSource();
 
@@ -81,12 +79,12 @@ export function zzfxP(...samples: number[][]): AudioBufferSourceNode {
   source.connect((zzfxX as AudioContext).destination);
   source.start();
   return source;
-}
+};
 
 /**
  * Build an array of samples.
  */
-export function zzfxG(
+export const zzfxG = (
   volume = 1,
   randomness = 0.05,
   frequency = 220,
@@ -107,7 +105,7 @@ export function zzfxG(
   sustainVolume = 1,
   decay = 0,
   tremolo = 0
-): number[] {
+): number[] => {
   // init parameters
   const PI2 = Math.PI * 2;
   let sampleRate = zzfxR,
@@ -201,4 +199,4 @@ export function zzfxG(
   }
 
   return b;
-}
+};

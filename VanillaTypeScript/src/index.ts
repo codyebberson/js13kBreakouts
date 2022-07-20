@@ -51,42 +51,37 @@ let dy = 0;
 let score = 0;
 let lives = 0;
 
-document.addEventListener('keydown', keyDownHandler, false);
-document.addEventListener('keyup', keyUpHandler, false);
-document.addEventListener('mousemove', mouseMoveHandler, false);
-document.addEventListener('click', clickHandler);
-
-function keyDownHandler(e: KeyboardEvent): void {
+const keyDownHandler = (e: KeyboardEvent): void => {
   if (e.keyCode === KEY_LEFT) {
     leftPressed = true;
   }
   if (e.keyCode === KEY_RIGHT) {
     rightPressed = true;
   }
-}
+};
 
-function keyUpHandler(e: KeyboardEvent): void {
+const keyUpHandler = (e: KeyboardEvent): void => {
   if (e.keyCode === KEY_LEFT) {
     leftPressed = false;
   }
   if (e.keyCode === KEY_RIGHT) {
     rightPressed = false;
   }
-}
+};
 
-function mouseMoveHandler(e: MouseEvent): void {
+const mouseMoveHandler = (e: MouseEvent): void => {
   mouseX = ((e.clientX - canvas.offsetLeft) / canvas.offsetWidth) * SCREEN_WIDTH;
-}
+};
 
-function clickHandler(): void {
+const clickHandler = (): void => {
   if (state !== STATE_PLAYING) {
     initGame();
     zzfx(...BLIP_SOUND);
     state = STATE_PLAYING;
   }
-}
+};
 
-function initGame(): void {
+const initGame = (): void => {
   bricks.length = 0;
   for (let r = 0; r < ROW_COUNT; r++) {
     bricks[r] = [];
@@ -98,16 +93,16 @@ function initGame(): void {
   score = 0;
   lives = 3;
   resetBall();
-}
+};
 
-function resetBall(): void {
+const resetBall = (): void => {
   x = SCREEN_WIDTH / 2;
   y = SCREEN_HEIGHT - 60;
   dx = 6 * Math.random() - 3;
   dy = -3;
-}
+};
 
-function collisionDetection(): void {
+const collisionDetection = (): void => {
   if (x + dx > SCREEN_WIDTH - BALL_RADIUS || x + dx < BALL_RADIUS) {
     zzfx(...WALL_BOUNCE_SOUND);
     dx = -dx;
@@ -154,9 +149,9 @@ function collisionDetection(): void {
       }
     }
   }
-}
+};
 
-function updateGame(): void {
+const updateGame = (): void => {
   if (mouseX > 0 && mouseX < SCREEN_WIDTH) {
     paddleX = mouseX - PADDLE_WIDTH / 2;
   }
@@ -171,24 +166,21 @@ function updateGame(): void {
 
   x += dx;
   y += dy;
-}
+};
 
-function drawBackground(): void {
+const drawBackground = (): void => {
   ctx.fillStyle = '#222733';
   ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-}
+};
 
-function drawBall(): void {
-  ctx.fillStyle = '#fff';
-  fillCircle(x, y, BALL_RADIUS);
-}
+const drawBall = (): void => fillCircle(x, y, BALL_RADIUS);
 
-function drawPaddle(): void {
+const drawPaddle = (): void => {
   ctx.fillStyle = '#fff';
   fillRoundedRect(paddleX, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
-}
+};
 
-function drawBricks(): void {
+const drawBricks = (): void => {
   for (let r = 0; r < ROW_COUNT; r++) {
     for (let c = 0; c < COLUMN_COUNT; c++) {
       if (bricks[r][c].status == 1) {
@@ -201,58 +193,55 @@ function drawBricks(): void {
       }
     }
   }
-}
+};
 
-function drawScore(): void {
-  drawText('' + score, 22, 38, 'bold 16px Arial');
-}
+const drawScore = (): void => drawText('' + score, 22, 38, 'bold 16px Arial');
 
-function drawLives(): void {
+const drawLives = (): void => {
   for (let i = 0; i < 3; i++) {
     ctx.fillStyle = lives >= i + 1 ? '#fff' : '#4e525c';
     fillRoundedRect(216 + i * 17, 24, 15, 15);
   }
-}
+};
 
-function drawGame(): void {
+const drawGame = (): void => {
   drawBricks();
   drawBall();
   drawPaddle();
   drawScore();
   drawLives();
-}
+};
 
-function drawMenu(): void {
+const drawMenu = (): void => {
   drawText('js13k', 65, 120, '64px Arial');
   drawText('Breakout', 65, 200, '64px Arial', '#a52730');
   drawPlayButton();
-}
+};
 
-function drawGameOver(): void {
+const drawGameOver = (): void => {
   drawGame();
   drawText('GAME OVER', 150, 350);
   drawPlayButton();
-}
+};
 
-function drawWinScreen(): void {
+const drawWinScreen = (): void => {
   drawGame();
   drawText('YOU WIN!', 160, 350);
   drawPlayButton();
-}
+};
 
-function drawPlayButton(): void {
-  ctx.fillStyle = '#fff';
+const drawPlayButton = (): void => {
   fillCircle(SCREEN_WIDTH / 2, 100 + SCREEN_HEIGHT / 2, 50);
   drawText('▶', 220, 485, '70px Arial', '#222733');
-}
+};
 
-function drawText(str: string, x: number, y: number, font = 'bold 32px Arial', color = '#fff'): void {
+const drawText = (str: string, x: number, y: number, font = 'bold 32px Arial', color = '#fff'): void => {
   ctx.font = font;
   ctx.fillStyle = color;
   ctx.fillText(str, x, y);
-}
+};
 
-function fillRoundedRect(x: number, y: number, w: number, h: number, r = 2): void {
+const fillRoundedRect = (x: number, y: number, w: number, h: number, r = 2): void => {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -261,16 +250,17 @@ function fillRoundedRect(x: number, y: number, w: number, h: number, r = 2): voi
   ctx.arcTo(x, y, x + w, y, r);
   ctx.fill();
   ctx.closePath();
-}
+};
 
-function fillCircle(x: number, y: number, r: number): void {
+const fillCircle = (x: number, y: number, r: number, color = '#fff'): void => {
+  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
   ctx.closePath();
-}
+};
 
-function draw(): void {
+const draw = (): void => {
   drawBackground();
   if (state === STATE_MENU) {
     drawMenu();
@@ -286,6 +276,11 @@ function draw(): void {
     drawWinScreen();
   }
   requestAnimationFrame(draw);
-}
+};
+
+document.addEventListener('keydown', keyDownHandler, false);
+document.addEventListener('keyup', keyUpHandler, false);
+document.addEventListener('mousemove', mouseMoveHandler, false);
+document.addEventListener('click', clickHandler);
 
 draw();
