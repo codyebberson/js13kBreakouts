@@ -175,10 +175,7 @@ const drawBackground = (): void => {
 
 const drawBall = (): void => fillCircle(x, y, BALL_RADIUS);
 
-const drawPaddle = (): void => {
-  ctx.fillStyle = '#fff';
-  fillRoundedRect(paddleX, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
-};
+const drawPaddle = (): void => fillRoundedRect(paddleX, PADDLE_Y, PADDLE_WIDTH, PADDLE_HEIGHT);
 
 const drawBricks = (): void => {
   for (let r = 0; r < ROW_COUNT; r++) {
@@ -188,8 +185,7 @@ const drawBricks = (): void => {
         const brickY = r * (BRICK_HEIGHT + BRICK_PADDING_Y) + BRICK_OFFSET_Y;
         bricks[r][c].x = brickX;
         bricks[r][c].y = brickY;
-        ctx.fillStyle = brickColors[(r / 2) | 0];
-        fillRoundedRect(brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT);
+        fillRoundedRect(brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT, brickColors[(r / 2) | 0]);
       }
     }
   }
@@ -199,8 +195,7 @@ const drawScore = (): void => drawText('' + score, 22, 38, 'bold 16px Arial');
 
 const drawLives = (): void => {
   for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = lives >= i + 1 ? '#fff' : '#4e525c';
-    fillRoundedRect(216 + i * 17, 24, 15, 15);
+    fillRoundedRect(216 + i * 17, 24, 15, 15, lives > i ? '#fff' : '#4e525c');
   }
 };
 
@@ -241,7 +236,9 @@ const drawText = (str: string, x: number, y: number, font = 'bold 32px Arial', c
   ctx.fillText(str, x, y);
 };
 
-const fillRoundedRect = (x: number, y: number, w: number, h: number, r = 2): void => {
+const fillRoundedRect = (x: number, y: number, w: number, h: number, color = '#fff'): void => {
+  const r = 2;
+  ctx.fillStyle = color;
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
