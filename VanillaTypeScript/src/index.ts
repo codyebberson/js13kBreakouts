@@ -33,14 +33,12 @@ const DEATH_SOUND = [, , 294, 0.01, 0.12, 0.23, 2, 0.16, -10, 10, , 0.09, 0.07, 
 const GAME_OVER_SOUND = [1.57, , 674, 0.03, 0.15, 0.38, 1, 0.38, -0.7, -0.1, -9, 0.14, 0.19, , 43, , 0.05, 0.55, 0.12];
 const WIN_SOUND = [, , 137, 0.02, 0.4, 0.4, 1, 1.88, , , 39, 0.16, 0.05, , , , , 0.5, 0.24];
 
-interface Brick {
-  x: number;
-  y: number;
-  status: number;
-}
-
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+const brickColors = ['#700f16', '#81161d', '#911d25', '#a52730'];
+const bricks: { x: number; y: number; status: number }[][] = [];
+
 let state = STATE_MENU;
 let mouseX = 0;
 let x = SCREEN_WIDTH / 2;
@@ -52,9 +50,6 @@ let dx = 0;
 let dy = 0;
 let score = 0;
 let lives = 0;
-
-const brickColors = ['#700f16', '#81161d', '#911d25', '#a52730'];
-const bricks: Brick[][] = [];
 
 document.addEventListener('keydown', keyDownHandler, false);
 document.addEventListener('keyup', keyUpHandler, false);
@@ -80,7 +75,7 @@ function keyUpHandler(e: KeyboardEvent): void {
 }
 
 function mouseMoveHandler(e: MouseEvent): void {
-  mouseX = e.clientX - canvas.offsetLeft;
+  mouseX = ((e.clientX - canvas.offsetLeft) / canvas.offsetWidth) * SCREEN_WIDTH;
 }
 
 function clickHandler(): void {
@@ -209,9 +204,7 @@ function drawBricks(): void {
 }
 
 function drawScore(): void {
-  ctx.font = 'bold 16px Arial';
-  ctx.fillStyle = '#fff';
-  ctx.fillText(score + '', 22, 38);
+  drawText('' + score, 22, 38, 'bold 16px Arial');
 }
 
 function drawLives(): void {
@@ -230,36 +223,33 @@ function drawGame(): void {
 }
 
 function drawMenu(): void {
-  ctx.font = '64px Arial';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('js13k', 65, 120);
-  ctx.fillStyle = '#a52730';
-  ctx.fillText('Breakout', 65, 200);
+  drawText('js13k', 65, 120, '64px Arial');
+  drawText('Breakout', 65, 200, '64px Arial', '#a52730');
   drawPlayButton();
 }
 
 function drawGameOver(): void {
   drawGame();
-  ctx.font = 'bold 32px Arial';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('GAME OVER', 150, 350);
+  drawText('GAME OVER', 150, 350);
   drawPlayButton();
 }
 
 function drawWinScreen(): void {
   drawGame();
-  ctx.font = 'bold 32px Arial';
-  ctx.fillStyle = '#fff';
-  ctx.fillText('YOU WIN!', 160, 350);
+  drawText('YOU WIN!', 160, 350);
   drawPlayButton();
 }
 
 function drawPlayButton(): void {
   ctx.fillStyle = '#fff';
   fillCircle(SCREEN_WIDTH / 2, 100 + SCREEN_HEIGHT / 2, 50);
-  ctx.fillStyle = '#222733';
-  ctx.font = '70px Arial';
-  ctx.fillText('▶', 220, 485);
+  drawText('▶', 220, 485, '70px Arial', '#222733');
+}
+
+function drawText(str: string, x: number, y: number, font = 'bold 32px Arial', color = '#fff'): void {
+  ctx.font = font;
+  ctx.fillStyle = color;
+  ctx.fillText(str, x, y);
 }
 
 function fillRoundedRect(x: number, y: number, w: number, h: number, r = 2): void {

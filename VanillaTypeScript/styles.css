@@ -10,4 +10,7 @@ body {
 
 canvas {
   outline: 0;
+  height: 100%;
+  width: auto;
+  aspect-ratio: 480 / 720;
 }
