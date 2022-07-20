@@ -16,6 +16,7 @@ const BRICK_OFFSET_Y = 90;
 const BRICK_OFFSET_X = 10;
 const BRICK_PADDING_X = 10;
 const BRICK_PADDING_Y = 7;
+const HIGH_SCORE_KEY = 'cehs';
 
 const STATE_MENU = 0;
 const STATE_PLAYING = 1;
@@ -35,6 +36,8 @@ const WIN_SOUND = [, , 137, 0.02, 0.4, 0.4, 1, 1.88, , , 39, 0.16, 0.05, , , , ,
 
 const canvas = document.getElementById('c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
 
 const brickColors = ['#700f16', '#81161d', '#911d25', '#a52730'];
 const bricks: { x: number; y: number; status: number }[][] = [];
@@ -138,8 +141,9 @@ const collisionDetection = (): void => {
         if (x > b.x && x < b.x + BRICK_WIDTH && y > b.y && y < b.y + BRICK_HEIGHT) {
           dy = -dy;
           b.status = 0;
-          score++;
-          if (score === ROW_COUNT * COLUMN_COUNT) {
+          score += 10;
+          localStorage[HIGH_SCORE_KEY] = Math.max(score, localStorage[HIGH_SCORE_KEY] || 0);
+          if (score === 10 * ROW_COUNT * COLUMN_COUNT) {
             state = STATE_WIN;
             zzfx(...WIN_SOUND);
           } else {
@@ -208,26 +212,36 @@ const drawGame = (): void => {
 };
 
 const drawMenu = (): void => {
-  drawText('js13k', 65, 120, '64px Arial');
-  drawText('Breakout', 65, 200, '64px Arial', '#a52730');
+  drawText('js13k', SCREEN_WIDTH / 2, 120, '64px Arial');
+  drawText('Breakout', SCREEN_WIDTH / 2, 200, '64px Arial', '#a52730');
   drawPlayButton();
+  drawHighScore();
 };
 
 const drawGameOver = (): void => {
   drawGame();
-  drawText('GAME OVER', 150, 350);
+  drawText('GAME OVER', SCREEN_WIDTH / 2, 350);
   drawPlayButton();
+  drawHighScore();
 };
 
 const drawWinScreen = (): void => {
   drawGame();
-  drawText('YOU WIN!', 160, 350);
+  drawText('YOU WIN!', SCREEN_WIDTH / 2, 350);
   drawPlayButton();
+  drawHighScore();
 };
 
 const drawPlayButton = (): void => {
   fillCircle(SCREEN_WIDTH / 2, 100 + SCREEN_HEIGHT / 2, 50);
-  drawText('▶', 220, 485, '70px Arial', '#222733');
+  drawText('▶', SCREEN_WIDTH / 2 + 5, 105 + SCREEN_HEIGHT / 2, '64px Arial', '#222733');
+};
+
+const drawHighScore = (): void => {
+  const highScore = localStorage[HIGH_SCORE_KEY];
+  if (highScore) {
+    drawText('♔ ' + highScore, SCREEN_WIDTH / 2, 620, '24px Arial', '#888');
+  }
 };
 
 const drawText = (str: string, x: number, y: number, font = 'bold 32px Arial', color = '#fff'): void => {

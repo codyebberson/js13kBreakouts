@@ -14,7 +14,7 @@ Features:
 - [Prettier](https://prettier.io/)
 - [ESLint](https://eslint.org/)
 
-The size of this demo is 2,356 bytes, only 18% of the 13kb budget, which leaves you 10,956 bytes to add gameplay, graphics, sound, and more.
+The size of this demo is 2,464 bytes, only 18% of the 13kb budget, which leaves you 10,848 bytes to add gameplay, graphics, sound, and more.
 
 ## Usage
 
