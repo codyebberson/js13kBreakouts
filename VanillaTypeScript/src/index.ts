@@ -1,5 +1,3 @@
-// Based on: https://jsfiddle.net/raymondjplante/dfh2tpu1/
-
 import { zzfx } from './zzfx';
 
 const SCREEN_WIDTH = 480;
@@ -40,17 +38,25 @@ ctx.textAlign = 'center';
 ctx.textBaseline = 'middle';
 
 const brickColors = ['#700f16', '#81161d', '#911d25', '#a52730'];
-const bricks: { x: number; y: number; status: number }[][] = [];
+const bricks: boolean[][] = [];
+
+const ball = {
+  x: SCREEN_WIDTH / 2,
+  y: SCREEN_HEIGHT - 60,
+  dx: 0,
+  dy: 0,
+  radius: 10,
+};
+
+const paddle = {
+  x: (SCREEN_WIDTH - PADDLE_WIDTH) / 2,
+  y: SCREEN_HEIGHT - 30,
+};
 
 let state = STATE_MENU;
 let mouseX = 0;
-let x = SCREEN_WIDTH / 2;
-let y = SCREEN_HEIGHT - 30;
-let paddleX = (SCREEN_WIDTH - PADDLE_WIDTH) / 2;
 let rightPressed = false;
 let leftPressed = false;
-let dx = 0;
-let dy = 0;
 let score = 0;
 let lives = 0;
 
@@ -86,10 +92,10 @@ function clickHandler(): void {
 
 function initGame(): void {
   bricks.length = 0;
-  for (let r = 0; r < ROW_COUNT; r++) {
-    bricks[r] = [];
-    for (let c = 0; c < COLUMN_COUNT; c++) {
-      bricks[r][c] = { x: 0, y: 0, status: 1 };
+  for (let y = 0; y < ROW_COUNT; y++) {
+    bricks[y] = [];
+    for (let x = 0; x < COLUMN_COUNT; x++) {
+      bricks[y][x] = true;
     }
   }
 
@@ -99,31 +105,38 @@ function initGame(): void {
 }
 
 function resetBall(): void {
-  x = SCREEN_WIDTH / 2;
-  y = SCREEN_HEIGHT - 60;
-  dx = 6 * Math.random() - 3;
-  dy = -3;
+  ball.x = SCREEN_WIDTH / 2;
+  ball.y = SCREEN_HEIGHT - 60;
+  ball.dx = 6 * Math.random() - 3;
+  ball.dy = -3;
 }
 
 function collisionDetection(): void {
-  if (x + dx > SCREEN_WIDTH - BALL_RADIUS || x + dx < BALL_RADIUS) {
+  if (ball.x + BALL_RADIUS > SCREEN_WIDTH || ball.x - BALL_RADIUS < 0) {
     zzfx(...WALL_BOUNCE_SOUND);
-    dx = -dx;
+    ball.x -= ball.dx;
+    ball.dx = -ball.dx;
   }
 
-  if (y + dy < BALL_RADIUS) {
+  if (ball.y - BALL_RADIUS < 0) {
     zzfx(...WALL_BOUNCE_SOUND);
-    dy = -dy;
+    ball.y -= ball.dy;
+    ball.dy = -ball.dy;
   }
 
-  if (y > PADDLE_Y && y < PADDLE_Y + PADDLE_HEIGHT && x > paddleX && x < paddleX + PADDLE_WIDTH) {
+  if (
+    ball.y + BALL_RADIUS > PADDLE_Y &&
+    ball.y - BALL_RADIUS < PADDLE_Y + PADDLE_HEIGHT &&
+    ball.x + BALL_RADIUS > paddle.x &&
+    ball.x - BALL_RADIUS < paddle.x + PADDLE_WIDTH
+  ) {
     zzfx(...PADDLE_BOUNCE_SOUND);
-    y = PADDLE_Y - BALL_RADIUS;
-    dx = (x - paddleX - PADDLE_WIDTH / 2) * 0.1;
-    dy *= -1.1;
+    ball.y = PADDLE_Y - BALL_RADIUS;
+    ball.dx = (ball.x - paddle.x - PADDLE_WIDTH / 2) * 0.1;
+    ball.dy *= -1.1;
   }
 
-  if (y + dy > SCREEN_HEIGHT - BALL_RADIUS) {
+  if (ball.y + ball.dy > SCREEN_HEIGHT - BALL_RADIUS) {
     lives--;
     if (!lives) {
       state = STATE_GAME_OVER;
@@ -134,20 +147,27 @@ function collisionDetection(): void {
     }
   }
 
-  for (let c = 0; c < COLUMN_COUNT; c++) {
-    for (let r = 0; r < ROW_COUNT; r++) {
-      let b = bricks[r][c];
-      if (b.status == 1) {
-        if (x > b.x && x < b.x + BRICK_WIDTH && y > b.y && y < b.y + BRICK_HEIGHT) {
-          dy = -dy;
-          b.status = 0;
+  for (let y = 0; y < ROW_COUNT; y++) {
+    for (let x = 0; x < COLUMN_COUNT; x++) {
+      if (bricks[y][x]) {
+        const brickX = x * (BRICK_WIDTH + BRICK_PADDING_X) + BRICK_OFFSET_X;
+        const brickY = y * (BRICK_HEIGHT + BRICK_PADDING_Y) + BRICK_OFFSET_Y;
+        if (
+          ball.x + BALL_RADIUS > brickX &&
+          ball.x - BALL_RADIUS < brickX + BRICK_WIDTH &&
+          ball.y + BALL_RADIUS > brickY &&
+          ball.y - BALL_RADIUS < brickY + BRICK_HEIGHT
+        ) {
+          zzfx(...EXPLOSION_SOUND);
+          ball.x -= ball.dx;
+          ball.y -= ball.dy;
+          ball.dy = -ball.dy;
+          bricks[y][x] = false;
           score += 10;
           localStorage[HIGH_SCORE_KEY] = Math.max(score, localStorage[HIGH_SCORE_KEY] || 0);
           if (score === 10 * ROW_COUNT * COLUMN_COUNT) {
             state = STATE_WIN;
             zzfx(...WIN_SOUND);
-          } else {
-            zzfx(...EXPLOSION_SOUND);
           }
         }
       }
@@ -157,19 +177,18 @@ function collisionDetection(): void {
 
 function updateGame(): void {
   if (mouseX > 0 && mouseX < SCREEN_WIDTH) {
-    paddleX = mouseX - PADDLE_WIDTH / 2;
+    paddle.x = mouseX - PADDLE_WIDTH / 2;
   }
 
-  if (rightPressed && paddleX < SCREEN_WIDTH - PADDLE_WIDTH) {
-    paddleX += 7;
-  } else if (leftPressed && paddleX > 0) {
-    paddleX -= 7;
+  if (rightPressed && paddle.x < SCREEN_WIDTH - PADDLE_WIDTH) {
+    paddle.x += 7;
+  } else if (leftPressed && paddle.x > 0) {
+    paddle.x -= 7;
   }
 
+  ball.x += ball.dx;
+  ball.y += ball.dy;
   collisionDetection();
-
-  x += dx;
-  y += dy;
 }
 
 function drawBackground(): void {
@@ -178,7 +197,7 @@ function drawBackground(): void {
 }
 
 function drawBall(): void {
-  fillCircle(x, y, BALL_RADIUS);
+  fillCircle(ball.x, ball.y, BALL_RADIUS);
 }
 
 function drawPaddle(x: number): void {
@@ -186,14 +205,12 @@ function drawPaddle(x: number): void {
 }
 
 function drawBricks(): void {
-  for (let r = 0; r < ROW_COUNT; r++) {
-    for (let c = 0; c < COLUMN_COUNT; c++) {
-      if (bricks[r][c].status == 1) {
-        const brickX = c * (BRICK_WIDTH + BRICK_PADDING_X) + BRICK_OFFSET_X;
-        const brickY = r * (BRICK_HEIGHT + BRICK_PADDING_Y) + BRICK_OFFSET_Y;
-        bricks[r][c].x = brickX;
-        bricks[r][c].y = brickY;
-        fillRoundedRect(brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT, brickColors[(r / 2) | 0]);
+  for (let y = 0; y < ROW_COUNT; y++) {
+    for (let x = 0; x < COLUMN_COUNT; x++) {
+      if (bricks[y][x]) {
+        const brickX = x * (BRICK_WIDTH + BRICK_PADDING_X) + BRICK_OFFSET_X;
+        const brickY = y * (BRICK_HEIGHT + BRICK_PADDING_Y) + BRICK_OFFSET_Y;
+        fillRoundedRect(brickX, brickY, BRICK_WIDTH, BRICK_HEIGHT, brickColors[(y / 2) | 0]);
       }
     }
   }
@@ -212,7 +229,7 @@ function drawLives(): void {
 function drawGame(): void {
   drawBricks();
   drawBall();
-  drawPaddle(paddleX);
+  drawPaddle(paddle.x);
   drawScore();
   drawLives();
 }
